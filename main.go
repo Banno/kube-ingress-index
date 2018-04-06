@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// kube-inress-index is a   // TODO(adam)
 //
 // https://github.com/kubernetes/client-go/tree/master/examples
 // https://github.com/jetstack/kube-lego
 //
-// kube-inress-index is a   // TODO(adam)
 package main
 
 import (
@@ -29,18 +29,14 @@ import (
 	"sync"
 	"time"
 
-	// "k8s.io/apimachinery/pkg/api/errors"
-	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-
-	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	watch "k8s.io/apimachinery/pkg/watch"
-	// "k8s.io/client-go/kubernetes"
+	cache "k8s.io/client-go/tools/cache"
+	clientcmd "k8s.io/client-go/tools/clientcmd"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/tools/cache"
-	// "k8s.io/client-go/util/workqueue"
+	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubernetes "k8s.io/client-go/kubernetes"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+	watch "k8s.io/apimachinery/pkg/watch"
+	// workqueue "k8s.io/client-go/util/workqueue"
 
 	// Import OIDC provider -- https://github.com/coreos/tectonic-forum/issues/99
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -65,12 +61,10 @@ func main() {
 	// kubeClient, err := kubernetes.NewForConfig(config)
 
 	// use the current context in kubeconfig
-	// config, err := clientcmd.BuildConfigFromFlags("https://k8s-banno-staging-api.banno-staging.com:443", *kubeconfig)
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
-	// config.Insecure = true
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
@@ -86,34 +80,6 @@ func main() {
 
 	// setup http page, forever blocks
 	listenHttp(":8080", respChan)
-
-	// example of listing pods
-	// for {
-	// 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
-	// 	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
-
-	// 	// Examples for error handling:
-	// 	// - Use helper functions like e.g. errors.IsNotFound()
-	// 	// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
-	// 	namespace := "default"
-	// 	pod := "example-xxxxx"
-	// 	_, err = clientset.CoreV1().Pods(namespace).Get(pod, metav1.GetOptions{})
-	// 	if errors.IsNotFound(err) {
-	// 		fmt.Printf("Pod %s in namespace %s not found\n", pod, namespace)
-	// 	} else if statusError, isStatus := err.(*errors.StatusError); isStatus {
-	// 		fmt.Printf("Error getting pod %s in namespace %s: %v\n",
-	// 			pod, namespace, statusError.ErrStatus.Message)
-	// 	} else if err != nil {
-	// 		panic(err.Error())
-	// 	} else {
-	// 		fmt.Printf("Found pod %s in namespace %s\n", pod, namespace)
-	// 	}
-
-	// 	time.Sleep(10 * time.Second)
-	// }
 }
 
 func homeDir() string {
@@ -154,15 +120,6 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 		return c.Extensions().Ingresses(ns).Watch(options)
 	}
 }
-
-// add: &Ingress{
-// ObjectMeta:k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta{Name:oauth2-proxy,GenerateName:,Namespace:infrastructure,SelfLink:/apis/extensions/v1beta1/namespaces/infrastructure/ingresses/oauth2-proxy,UID:85299684-3832-11e8-947e-000d3a75e284,ResourceVersion:36366058,Generation:6,CreationTimestamp:2018-04-04 13:03:46 -0500 CDT,DeletionTimestamp:<nil>,DeletionGracePeriodSeconds:nil,Labels:map[string]string{team: infrastructure,},
-
-// OwnerReferences:[],Finalizers:[],ClusterName:,Initializers:nil,},
-// Spec: IngressSpec{
-// Backend:nil,
-// TLS:[{[infra.banno-staging.com] oauth2-proxy-tls}],
-// Rules:[{infra.banno-staging.com {HTTPIngressRuleValue{Paths:[{/oauth2 {oauth2-proxy {0 4180 }}}],}}}],},Status:IngressStatus{LoadBalancer:k8s_io_kubernetes_pkg_api_v1.LoadBalancerStatus{Ingress:[{ }],},},}
 
 // TODO(adam): return multiple FQDN's
 func buildFQDN(ing k8sExtensions.IngressSpec) string {
@@ -294,5 +251,5 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 		ingEventHandler,
 	)
 
-	controller.Run(nil) // kl.stopCh
+	controller.Run(nil) // TODO(adam): watch for signals and shutdown
 }
