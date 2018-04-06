@@ -192,6 +192,7 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 }
 
 // TODO(adam): return multiple FQDN's
+// TODO(adam): don't return invalid ingress objects, new buildIngress(..) ??
 func buildFQDN(ing k8sExtensions.IngressSpec) string {
 	// TODO(adam): we assume TLS for now, but should lookup in ing.TLS https://godoc.org/k8s.io/api/extensions/v1beta1#IngressTLS
 	for i := range ing.Rules {
