@@ -22,6 +22,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"os"
@@ -120,6 +121,23 @@ func handleSignals(signalChan chan os.Signal, doneChan chan error) {
 	}
 }
 
+var pageContent = `<!doctype html>
+<html>
+  <head>
+    <title>kube-ingress-index</title>
+  </head>
+  <body>
+    <h2>kube-ingress-index</h2>
+    <ul>
+      {{range $ing := .Ingresses}}
+        <li>{{ $ing.Namespace }} / <a href="{{ $ing.FQDN }}">{{ $ing.Name }}</a></li>
+      {{else}}
+      <li>No Ingress objects found</li>
+      {{end}}
+    </ul>
+  </body>
+</html>`
+
 func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 	var curIngresses []ingress
 
@@ -142,8 +160,16 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 		}
 	}()
 
+	tpl := template.Must(template.New("contents").Parse(pageContent))
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%d ingresses", len(curIngresses))
+		err := tpl.Execute(w, struct{
+			Ingresses []ingress
+		}{
+			Ingresses: curIngresses,
+		})
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		}
 	}
 
 	fmt.Printf("listening on %s\n", address)
