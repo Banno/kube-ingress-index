@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -73,6 +74,8 @@ func main() {
 	if *flagWatchableNamespaces == "" || len(watchableNamespaces) == 0 {
 		panic("You need to specify -namespaces for namespaces to watch")
 	}
+	sort.Strings(watchableNamespaces)
+	fmt.Printf("watching namespaces: %s\n", strings.Join(watchableNamespaces, ", "))
 
 	// try and get config from cluster
 	config, err := rest.InClusterConfig()
@@ -155,7 +158,6 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 
 			case cur := <-respChan:
 				curIngresses = cur
-				fmt.Printf("got %d ingresses\n", len(cur))
 			}
 		}
 	}()
@@ -165,7 +167,7 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 		err := tpl.Execute(w, struct{
 			Ingresses []ingress
 		}{
-			Ingresses: curIngresses,
+			Ingresses: curIngresses, // TODO(adam): sort
 		})
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
@@ -309,15 +311,12 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 		},
 	}
 
-	_, controller := cache.NewInformer(
-		&cache.ListWatch{
-			ListFunc:  ingressListFunc(kubeClient, namespaces[0]), // TODO(adam): actually process all namespaces
-			WatchFunc: ingressWatchFunc(kubeClient, namespaces[0]),
-		},
-		&k8sExtensions.Ingress{},
-		resyncInterval,
-		ingEventHandler,
-	)
-
-	controller.Run(nil) // TODO(adam): watch for signals and shutdown
+	for i := range namespaces {
+		watch := &cache.ListWatch{
+			ListFunc:  ingressListFunc(kubeClient, namespaces[i]),
+			WatchFunc: ingressWatchFunc(kubeClient, namespaces[i]),
+		}
+		_, controller := cache.NewInformer(watch, &k8sExtensions.Ingress{}, resyncInterval, ingEventHandler)
+		go controller.Run(nil) // TODO(adam): pass doneChan through to here
+	}
 }
