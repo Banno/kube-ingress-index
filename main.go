@@ -26,6 +26,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,52 +35,65 @@ import (
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"
+	rest "k8s.io/client-go/rest"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	// workqueue "k8s.io/client-go/util/workqueue"
 
 	// Import OIDC provider -- https://github.com/coreos/tectonic-forum/issues/99
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
 var (
+	// flags
+	flagAddress = flag.String("address", ":8080", "Address to listen on")
+	flagKubeconfig *string
+	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
+
+	// default settings
 	resyncInterval = 60 * time.Second
 )
 
 func main() {
-	var kubeconfig *string
 	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		flagKubeconfig = flag.String("kubeconfig", filepath.Join(homeDir(), ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		flagKubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
 
-	// TODO(adam)
-	// "k8s.io/client-go/rest"
-	// config, err := rest.InClusterConfig()
-	// kubeClient, err := kubernetes.NewForConfig(config)
+	// validation
+	var watchableNamespaces []string
+	watchableNamespaces = strings.Split(*flagWatchableNamespaces, ",")
+	if *flagWatchableNamespaces == "" {
+		ns := os.Getenv("NAMESPACES")
+		flagWatchableNamespaces = &ns
+	}
+	if *flagWatchableNamespaces == "" || len(watchableNamespaces) == 0 {
+		panic("You need to specify -namespaces for namespaces to watch")
+	}
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	// try and get config from cluster
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		// read config from -kubeconfig flag
+		config, err = clientcmd.BuildConfigFromFlags("", *flagKubeconfig)
+		if err != nil {
+			panic(fmt.Sprintf("error reading config, err=%v", err))
+		}
 	}
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		panic(fmt.Sprintf("error setting up kubernetes api client, err=%v", err))
 	}
 
 	// ingress
 	respChan := make(chan []ingress, 10)
-	go watchIngresses(clientset, []string{
-		"infrastructure",
-	}, respChan)
+	go watchIngresses(clientset, watchableNamespaces, respChan)
 
 	// setup http page, forever blocks
-	listenHttp(":8080", respChan)
+	listenHttp(*flagAddress, respChan)
 }
 
 func homeDir() string {
@@ -105,6 +119,8 @@ func listenHttp(address string, respChan chan []ingress) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%d ingresses", len(curIngresses))
 	}
+
+	fmt.Printf("listening on %s\n", address)
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(address, nil)
 }
@@ -160,19 +176,20 @@ func (i *ingresses) upsert(ing ingress) []ingress {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 
+	found := false
 	for k := range i.active {
 		if i.active[k].FQDN == ing.FQDN {
-			var out []ingress
-			copy(out, i.active)
-			return out // return early, we've already added this ingress
+			found = true
+			break // we've already added this ingress
 		}
 	}
-	// didn't find our ingress, add it and return
-	i.active = append(i.active, ing)
+	if !found { // didn't find our ingress, add it and return
+		i.active = append(i.active, ing)
+	}
 
 	// return a copy
 	out := make([]ingress, len(i.active))
-	fmt.Printf("copied %d\n", copy(out, i.active))
+	copy(out, i.active)
 	return out
 }
 func (i *ingresses) delete(ing ingress) []ingress {
@@ -209,9 +226,8 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 				}
 				current := accum.upsert(ing)
 				respChan <- current
-				fmt.Printf("added %s, len(current)=%d\n", ing.String(), len(current))
+				fmt.Printf("added %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
-			// kl.workQueue.Add(true) // TODO(adam): uhh...
 		},
 		DeleteFunc: func(obj interface{}) {
 			delIng, ok := obj.(*k8sExtensions.Ingress)
@@ -223,7 +239,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 				}
 				current := accum.delete(ing)
 				respChan <- current
-				fmt.Printf("deleted %s\n", ing.String())
+				fmt.Printf("deleted %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
 		},
 		UpdateFunc: func(_, cur interface{}) {
@@ -236,7 +252,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 				}
 				current := accum.upsert(ing)
 				respChan <- current
-				fmt.Printf("updated %s\n", ing.String())
+				fmt.Printf("updated %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
 		},
 	}
