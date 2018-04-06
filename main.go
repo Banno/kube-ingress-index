@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -45,7 +46,7 @@ import (
 
 var (
 	// flags
-	flagAddress = flag.String("address", ":8080", "Address to listen on")
+	flagAddress = flag.String("address", "0.0.0.0:8080", "Address to listen on")
 	flagKubeconfig *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
 
@@ -92,8 +93,14 @@ func main() {
 	respChan := make(chan []ingress, 10)
 	go watchIngresses(clientset, watchableNamespaces, respChan)
 
-	// setup http page, forever blocks
-	listenHttp(*flagAddress, respChan)
+	// catch signals
+	signalChan := make(chan os.Signal, 1)
+	doneChan := make(chan error, 1)
+	go handleSignals(signalChan, doneChan)
+	signal.Notify(signalChan, os.Interrupt, os.Kill)
+
+	// setup http page
+	listenHttp(*flagAddress, respChan, doneChan)
 }
 
 func homeDir() string {
@@ -103,12 +110,31 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // windows
 }
 
-func listenHttp(address string, respChan chan []ingress) {
+func handleSignals(signalChan chan os.Signal, doneChan chan error) {
+	for {
+		select {
+		case s := <-signalChan:
+			doneChan <- fmt.Errorf("shutdown initiated, signal=%v", s)
+			return
+		}
+	}
+}
+
+func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 	var curIngresses []ingress
+
+	srv := &http.Server{
+		Addr: address,
+	}
 
 	go func() {
 		for {
 			select{
+			case err := <-doneChan:
+				fmt.Println(err.Error())
+				srv.Shutdown(nil)
+				return
+
 			case cur := <-respChan:
 				curIngresses = cur
 				fmt.Printf("got %d ingresses\n", len(cur))
@@ -122,7 +148,7 @@ func listenHttp(address string, respChan chan []ingress) {
 
 	fmt.Printf("listening on %s\n", address)
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(address, nil)
+	srv.ListenAndServe()
 }
 
 func ingressListFunc(c *kubernetes.Clientset, ns string) func(k8sMeta.ListOptions) (runtime.Object, error) {
