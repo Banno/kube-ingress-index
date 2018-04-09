@@ -38,3 +38,7 @@ Usage of ./bin/kube-ingress-ingex-darwin:
   -vmodule value
     	comma-separated list of pattern=N settings for file-filtered logging
 ```
+
+### Annotations
+
+- `index.ingress.banno.com/ignore`: Set this to have kube-ingress-index not list the Ingress
