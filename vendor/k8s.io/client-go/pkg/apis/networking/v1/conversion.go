@@ -85,12 +85,10 @@ func Convert_v1_NetworkPolicyIngressRule_To_extensions_NetworkPolicyIngressRule(
 			return err
 		}
 	}
-	if in.From != nil {
-		out.From = make([]extensions.NetworkPolicyPeer, len(in.From))
-		for i := range in.From {
-			if err := Convert_v1_NetworkPolicyPeer_To_extensions_NetworkPolicyPeer(&in.From[i], &out.From[i], s); err != nil {
-				return err
-			}
+	out.From = make([]extensions.NetworkPolicyPeer, len(in.From))
+	for i := range in.From {
+		if err := Convert_v1_NetworkPolicyPeer_To_extensions_NetworkPolicyPeer(&in.From[i], &out.From[i], s); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -103,12 +101,10 @@ func Convert_extensions_NetworkPolicyIngressRule_To_v1_NetworkPolicyIngressRule(
 			return err
 		}
 	}
-	if in.From != nil {
-		out.From = make([]NetworkPolicyPeer, len(in.From))
-		for i := range in.From {
-			if err := Convert_extensions_NetworkPolicyPeer_To_v1_NetworkPolicyPeer(&in.From[i], &out.From[i], s); err != nil {
-				return err
-			}
+	out.From = make([]NetworkPolicyPeer, len(in.From))
+	for i := range in.From {
+		if err := Convert_extensions_NetworkPolicyPeer_To_v1_NetworkPolicyPeer(&in.From[i], &out.From[i], s); err != nil {
+			return err
 		}
 	}
 	return nil
