@@ -23,6 +23,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -202,7 +203,6 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 }
 
 // TODO(adam): return multiple FQDN's
-// TODO(adam): don't return invalid ingress objects, new buildIngress(..) ??
 func buildFQDN(ing k8sExtensions.IngressSpec) string {
 	tlsHosts := make(map[string]bool, 0)
 	for i := range ing.TLS {
@@ -212,7 +212,6 @@ func buildFQDN(ing k8sExtensions.IngressSpec) string {
 	}
 
 	for i := range ing.Rules {
-		// find a rule with a host and path that's parsable // TODO
 		host := ing.Rules[i].Host
 		paths := ing.Rules[i].IngressRuleValue.HTTP.Paths
 		for i := range paths {
@@ -230,6 +229,18 @@ func buildFQDN(ing k8sExtensions.IngressSpec) string {
 		}
 	}
 	return ""
+}
+
+func buildIngress(ing *k8sExtensions.Ingress) (*ingress, error) {
+	fqdn := buildFQDN(ing.Spec)
+	if fqdn == "" {
+		return nil, errors.New("empty FQDN")
+	}
+	return &ingress{
+		Namespace: ing.Namespace,
+		Name: ing.Name,
+		FQDN: fqdn,
+	}, nil
 }
 
 // ingress is a smaller model for internal shipping about
@@ -295,40 +306,34 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 		AddFunc: func(obj interface{}) {
 			addIng, ok := obj.(*k8sExtensions.Ingress)
 			if ok {
-				ing := ingress{
-					Namespace: addIng.Namespace,
-					Name: addIng.Name,
-					FQDN: buildFQDN(addIng.Spec),
+				ing, err := buildIngress(addIng)
+				if err == nil {
+					current := accum.upsert(*ing)
+					respChan <- current
+					fmt.Printf("added %s, watching %d Ingress objects\n", ing.String(), len(current))
 				}
-				current := accum.upsert(ing)
-				respChan <- current
-				fmt.Printf("added %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
 			delIng, ok := obj.(*k8sExtensions.Ingress)
 			if ok {
-				ing := ingress{
-					Namespace: delIng.Namespace,
-					Name: delIng.Name,
-					FQDN: buildFQDN(delIng.Spec),
+				ing, err := buildIngress(delIng)
+				if err == nil {
+					current := accum.delete(*ing)
+					respChan <- current
+					fmt.Printf("deleted %s, watching %d Ingress objects\n", ing.String(), len(current))
 				}
-				current := accum.delete(ing)
-				respChan <- current
-				fmt.Printf("deleted %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
 		},
 		UpdateFunc: func(_, cur interface{}) {
 			upIng, ok := cur.(*k8sExtensions.Ingress)
 			if ok {
-				ing := ingress{
-					Namespace: upIng.Namespace,
-					Name: upIng.Name,
-					FQDN: buildFQDN(upIng.Spec),
+				ing, err := buildIngress(upIng)
+				if err == nil {
+					current := accum.upsert(*ing)
+					respChan <- current
+					fmt.Printf("updated %s, watching %d Ingress objects\n", ing.String(), len(current))
 				}
-				current := accum.upsert(ing)
-				respChan <- current
-				fmt.Printf("updated %s, watching %d Ingress objects\n", ing.String(), len(current))
 			}
 		},
 	}
