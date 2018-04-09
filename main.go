@@ -158,6 +158,7 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 
 			case cur := <-respChan:
 				curIngresses = cur
+				sortIngresses(curIngresses)
 			}
 		}
 	}()
@@ -167,7 +168,7 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 		err := tpl.Execute(w, struct{
 			Ingresses []ingress
 		}{
-			Ingresses: curIngresses, // TODO(adam): sort
+			Ingresses: curIngresses,
 		})
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
@@ -177,6 +178,12 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 	fmt.Printf("listening on %s\n", address)
 	http.HandleFunc("/", handler)
 	srv.ListenAndServe()
+}
+
+func sortIngresses(ing []ingress) {
+	sort.Slice(ing, func(i, j int) bool {
+		return strings.ToLower(ing[i].String()) < strings.ToLower(ing[j].String())
+	})
 }
 
 func ingressListFunc(c *kubernetes.Clientset, ns string) func(k8sMeta.ListOptions) (runtime.Object, error) {
