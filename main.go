@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// kube-inress-index is a   // TODO(adam)
+// kube-inress-index is a service which watches kubernetes namespaces
+// and builds an index.html type page linking to each Ingress.
 //
+// It's meant to be used as a "table of contents".
+//
+// The code was inspired and based off of the following projects
 // https://github.com/kubernetes/client-go/tree/master/examples
 // https://github.com/jetstack/kube-lego
-//
 package main
 
 import (
