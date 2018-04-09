@@ -204,14 +204,25 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 // TODO(adam): return multiple FQDN's
 // TODO(adam): don't return invalid ingress objects, new buildIngress(..) ??
 func buildFQDN(ing k8sExtensions.IngressSpec) string {
-	// TODO(adam): we assume TLS for now, but should lookup in ing.TLS https://godoc.org/k8s.io/api/extensions/v1beta1#IngressTLS
+	tlsHosts := make(map[string]bool, 0)
+	for i := range ing.TLS {
+		for j := range ing.TLS[i].Hosts {
+			tlsHosts[ing.TLS[i].Hosts[j]] = true
+		}
+	}
+
 	for i := range ing.Rules {
 		// find a rule with a host and path that's parsable // TODO
 		host := ing.Rules[i].Host
 		paths := ing.Rules[i].IngressRuleValue.HTTP.Paths
 		for i := range paths {
-			u, _ := url.Parse(fmt.Sprintf("https://%s", host))
-			if u == nil {
+			var u *url.URL
+			if tlsHosts[host] {
+				u, _ = url.Parse(fmt.Sprintf("https://%s", host))
+			} else {
+				u, _ = url.Parse(fmt.Sprintf("http://%s", host))
+			}
+			if u == nil || u.Host == "" || strings.HasPrefix(u.Host, "localhost:") { // ignore invalid rules/hosts
 				continue
 			}
 			u.Path = paths[i].Path
