@@ -14,3 +14,4 @@
 .glide/
 
 /kube-ingress-index
+bin/
