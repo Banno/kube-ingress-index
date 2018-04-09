@@ -53,6 +53,9 @@ import (
 const Version = "0.1.0"
 
 var (
+	// annotations
+	annotationIgnore = "index.ingress.banno.com/ignore"
+
 	// flags
 	flagAddress = flag.String("address", "0.0.0.0:8080", "Address to listen on")
 	flagKubeconfig *string
@@ -240,6 +243,10 @@ func buildFQDN(ing k8sExtensions.IngressSpec) string {
 }
 
 func buildIngress(ing *k8sExtensions.Ingress) (*ingress, error) {
+	if _, exists := ing.Annotations[annotationIgnore]; exists {
+		return nil, fmt.Errorf("ignoring %s due to annotation", ing.Name)
+	}
+
 	fqdn := buildFQDN(ing.Spec)
 	if fqdn == "" {
 		return nil, errors.New("empty FQDN")
