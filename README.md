@@ -42,3 +42,7 @@ Usage of ./bin/kube-ingress-ingex-darwin:
 ### Annotations
 
 - `index.ingress.banno.com/ignore`: Set this to have kube-ingress-index not list the Ingress
+
+## Release Steps
+
+Run `make docker` after modifying `Version` in `main.go`. You'll need to retag locally and push to our internal registry.
