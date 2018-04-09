@@ -1,3 +1,5 @@
+VERSION := $(shell grep -Eo '(\d\.\d\.\d)(-dev)?' main.go | head -n1)
+
 .PHONY: build deps docker
 
 build:
@@ -9,4 +11,4 @@ deps:
 	dep ensure -update
 
 docker: build
-	docker build -f Dockerfile .
+	docker build -t banno/kube-inress-index:$(VERSION) -f Dockerfile .

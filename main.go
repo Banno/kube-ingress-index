@@ -50,11 +50,14 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
+const Version = "0.1.0"
+
 var (
 	// flags
 	flagAddress = flag.String("address", "0.0.0.0:8080", "Address to listen on")
 	flagKubeconfig *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
+	flagVersion = flag.Bool("version", false, "Print the version and quit")
 
 	// default settings
 	resyncInterval = 60 * time.Second
@@ -67,6 +70,11 @@ func main() {
 		flagKubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
+
+	if *flagVersion {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 
 	// validation
 	var watchableNamespaces []string
