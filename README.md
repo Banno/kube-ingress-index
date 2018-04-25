@@ -45,4 +45,4 @@ Usage of ./bin/kube-ingress-ingex-darwin:
 
 ## Release Steps
 
-Run `make docker` after modifying `Version` in `main.go`. You'll need to retag locally and push to our internal registry.
+Run `make docker` after modifying `Version` in `main.go`. You'll need to push to our internal registry.

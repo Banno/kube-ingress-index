@@ -11,4 +11,4 @@ deps:
 	dep ensure -update
 
 docker: build
-	docker build -t banno/kube-ingress-index:$(VERSION) -f Dockerfile .
+	docker build -t registry.banno-internal.com/kube-ingress-index:$(VERSION) -f Dockerfile .
