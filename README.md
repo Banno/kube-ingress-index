@@ -2,6 +2,8 @@
 
 A serivce which generates a Table of Contents page from `Ingress` resources and updates itself when Ingresses are changed, added, or deleted.
 
+![](assets/index.png)
+
 ```
 $ ./kube-ingress-index -kubeconfig ~/.kube/config -namespaces tectonic-system,infrastructure
 watching namespaces: tectonic-system,infrastructure
