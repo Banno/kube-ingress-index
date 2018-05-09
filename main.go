@@ -58,6 +58,7 @@ var (
 
 	// flags
 	flagAddress             = flag.String("address", "0.0.0.0:8080", "Address to listen on")
+	flagForceTLS            = flag.Bool("force-tls", true, "Force all urls to be https, even if their Ingress objects has no tls object")
 	flagKubeconfig          *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
 	flagVersion             = flag.Bool("version", false, "Print the version and quit")
@@ -227,7 +228,7 @@ func buildFQDN(ing k8sExtensions.IngressSpec) string {
 		paths := ing.Rules[i].IngressRuleValue.HTTP.Paths
 		for i := range paths {
 			var u *url.URL
-			if tlsHosts[host] {
+			if *flagForceTLS || tlsHosts[host] {
 				u, _ = url.Parse(fmt.Sprintf("https://%s", host))
 			} else {
 				u, _ = url.Parse(fmt.Sprintf("http://%s", host))
