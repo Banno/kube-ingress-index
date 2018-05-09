@@ -37,14 +37,14 @@ import (
 	"sync"
 	"time"
 
-	cache "k8s.io/client-go/tools/cache"
-	clientcmd "k8s.io/client-go/tools/clientcmd"
-	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
-	rest "k8s.io/client-go/rest"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
+	kubernetes "k8s.io/client-go/kubernetes"
+	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	rest "k8s.io/client-go/rest"
+	cache "k8s.io/client-go/tools/cache"
+	clientcmd "k8s.io/client-go/tools/clientcmd"
 
 	// Import OIDC provider -- https://github.com/coreos/tectonic-forum/issues/99
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -57,10 +57,10 @@ var (
 	annotationIgnore = "index.ingress.banno.com/ignore"
 
 	// flags
-	flagAddress = flag.String("address", "0.0.0.0:8080", "Address to listen on")
-	flagKubeconfig *string
+	flagAddress             = flag.String("address", "0.0.0.0:8080", "Address to listen on")
+	flagKubeconfig          *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
-	flagVersion = flag.Bool("version", false, "Print the version and quit")
+	flagVersion             = flag.Bool("version", false, "Print the version and quit")
 
 	// default settings
 	resyncInterval = 60 * time.Second
@@ -165,7 +165,7 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 
 	go func() {
 		for {
-			select{
+			select {
 			case err := <-doneChan:
 				fmt.Println(err.Error())
 				srv.Shutdown(nil)
@@ -180,7 +180,7 @@ func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
 
 	tpl := template.Must(template.New("contents").Parse(pageContent))
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		err := tpl.Execute(w, struct{
+		err := tpl.Execute(w, struct {
 			Ingresses []ingress
 		}{
 			Ingresses: curIngresses,
@@ -253,8 +253,8 @@ func buildIngress(ing *k8sExtensions.Ingress) (*ingress, error) {
 	}
 	return &ingress{
 		Namespace: ing.Namespace,
-		Name: ing.Name,
-		FQDN: fqdn,
+		Name:      ing.Name,
+		FQDN:      fqdn,
 	}, nil
 }
 
@@ -265,6 +265,7 @@ type ingress struct {
 	// FQDN is an address which the backend is reachable from
 	FQDN string
 }
+
 func (ing ingress) String() string {
 	return fmt.Sprintf("Ingress: namespace=%s, name=%s, fqdn=%s", ing.Namespace, ing.Name, ing.FQDN)
 }
@@ -272,8 +273,9 @@ func (ing ingress) String() string {
 type ingresses struct {
 	// current set of Ingress objects
 	active []ingress
-	mu sync.Mutex
+	mu     sync.Mutex
 }
+
 func (i *ingresses) upsert(ing ingress) []ingress {
 	i.mu.Lock()
 	defer i.mu.Unlock()
