@@ -50,7 +50,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
-const Version = "0.2.1"
+const Version = "0.2.2-dev"
 
 var (
 	// annotations
