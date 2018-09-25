@@ -144,6 +144,7 @@ var pageContent = `<!doctype html>
 <html>
   <head>
     <title>kube-ingress-index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
     <h2>kube-ingress-index</h2>
