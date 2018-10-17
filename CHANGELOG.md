@@ -1,3 +1,7 @@
+## 0.2.2 (2018-10-17)
+
+- Improve display on mobile browsers
+
 ## 0.2.1 (2018-05-09)
 
 - Add `-force-tls=true` flag to rewrite http urls as https
