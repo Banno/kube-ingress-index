@@ -1,0 +1,46 @@
+project_name: kube-ingress-index
+before:
+  hooks:
+    - go mod download
+dockers:
+  - image_templates:
+      - "banno/{{ .ProjectName }}:{{ .Tag }}"
+      - "banno/{{ .ProjectName }}:{{ .Major }}"
+      - "banno/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
+      - "banno/{{ .ProjectName }}:latest"
+release:
+  github:
+    owner: banno
+    name: "{{ .ProjectName }}"
+  prerelease: auto
+builds:
+  -
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    flags:
+      - -a
+    ldflags:
+      - -s
+      - -w
+archive:
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: checksums.txt
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - "^docs:"
+    - "^test:"

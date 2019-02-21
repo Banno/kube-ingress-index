@@ -50,8 +50,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
-const Version = "0.3.0"
-
 var (
 	// annotations
 	annotationIgnore = "index.ingress.banno.com/ignore"
@@ -61,7 +59,6 @@ var (
 	flagForceTLS            = flag.Bool("force-tls", true, "Force all urls to be https, even if their Ingress objects has no tls object")
 	flagKubeconfig          *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
-	flagVersion             = flag.Bool("version", false, "Print the version and quit")
 
 	// default settings
 	resyncInterval = 60 * time.Second
@@ -74,11 +71,6 @@ func main() {
 		flagKubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-
-	if *flagVersion {
-		fmt.Println(Version)
-		os.Exit(0)
-	}
 
 	// validation
 	var watchableNamespaces []string
