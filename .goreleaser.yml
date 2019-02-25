@@ -4,10 +4,10 @@ before:
     - go mod download
 dockers:
   - image_templates:
-      - "banno/{{ .ProjectName }}:{{ .Tag }}"
-      - "banno/{{ .ProjectName }}:{{ .Major }}"
-      - "banno/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
-      - "banno/{{ .ProjectName }}:latest"
+      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Tag }}"
+      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Major }}"
+      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
+      - "registry.banno-internal.com/{{ .ProjectName }}:latest"
 release:
   github:
     owner: banno
