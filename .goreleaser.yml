@@ -3,19 +3,26 @@ before:
   hooks:
     - go mod download
 dockers:
-  - image_templates:
-      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Tag }}"
-      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Major }}"
-      - "registry.banno-internal.com/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
-      - "registry.banno-internal.com/{{ .ProjectName }}:latest"
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "registry.banno-internal.com/{{.ProjectName}}:{{.Tag}}"
+      - "registry.banno-internal.com/{{.ProjectName}}:{{.Major}}"
+      - "registry.banno-internal.com/{{.ProjectName}}:{{.Major}}.{{.Minor}}"
+      - "registry.banno-internal.com/{{.ProjectName}}:latest"
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.vendor=Jack Henry & Associates"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--label=org.label-schema.vcs-url={{.GitURL}}"
 release:
   github:
     owner: banno
-    name: "{{ .ProjectName }}"
+    name: "{{.ProjectName}}"
   prerelease: auto
 builds:
-  -
-    goos:
+  - goos:
       - linux
     goarch:
       - amd64
@@ -28,16 +35,18 @@ builds:
       - -s
       - -w
 archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
+  wrap_in_directory: true
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - LICENSE
+    - README.md
+    - CHANGELOG.md
 checksum:
   name_template: checksums.txt
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{.Tag}}-next"
 changelog:
   sort: asc
   filters:
