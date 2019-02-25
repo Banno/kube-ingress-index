@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY dist/linux_amd64/kube-ingress-ingex /bin/kube-ingress-ingex
-ENTRYPOINT ["/bin/kube-ingress-ingex"]
+COPY ./dist/linux_amd64/kube-ingress-index /bin/kube-ingress-index
+ENTRYPOINT ["/bin/kube-ingress-index"]
 CMD [""]
