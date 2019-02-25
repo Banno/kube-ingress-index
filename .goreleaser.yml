@@ -18,8 +18,8 @@ dockers:
     - "--label=org.label-schema.vcs-url={{.GitURL}}"
 release:
   github:
-    owner: banno
-    name: "{{.ProjectName}}"
+    owner: Banno
+    name: kube-ingress-index
   prerelease: auto
 builds:
   - goos:
