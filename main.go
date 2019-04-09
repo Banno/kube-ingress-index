@@ -56,7 +56,7 @@ var (
 
 	// flags
 	flagAddress             = flag.String("address", "0.0.0.0:8080", "Address to listen on")
-	flagForceTLS            = flag.Bool("force-tls", true, "Force all urls to be https, even if their Ingress objects has no tls object")
+	flagForceTLS            = flag.Bool("force-tls", true, "Force all URLs to be HTTPS, even if their Ingress objects has no TLS object")
 	flagKubeconfig          *string
 	flagWatchableNamespaces = flag.String("namespaces", "", "Namespaces to watch (required)")
 
@@ -98,7 +98,7 @@ func main() {
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(fmt.Sprintf("error setting up kubernetes api client, err=%v", err))
+		panic(fmt.Sprintf("error setting up Kubernetes API client, err=%v", err))
 	}
 
 	// ingress
