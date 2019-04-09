@@ -21,7 +21,7 @@ main () {
   git-chglog -o CHANGELOG.md --next-tag "${next_version}"
   git commit -am "Bump version to ${next_version} and update the changelog"
   git tag "${next_version}"
-  ./bin/goreleaser --rm-dist --release-notes CHANGELOG.md
+  ./bin/goreleaser --rm-dist --release-notes <(git-chglog "${next_version}")
 }
 
 main "$@"
