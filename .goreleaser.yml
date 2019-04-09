@@ -11,11 +11,11 @@ dockers:
       - "registry.banno-internal.com/{{.ProjectName}}:{{.Major}}.{{.Minor}}"
       - "registry.banno-internal.com/{{.ProjectName}}:latest"
     build_flag_templates:
-    - "--label=org.label-schema.schema-version=1.0"
-    - "--label=org.label-schema.vendor=Jack Henry & Associates"
-    - "--label=org.label-schema.version={{.Version}}"
-    - "--label=org.label-schema.name={{.ProjectName}}"
-    - "--label=org.label-schema.vcs-url={{.GitURL}}"
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.vendor=Jack Henry & Associates"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
+      - "--label=org.label-schema.vcs-url={{.GitURL}}"
 release:
   github:
     owner: Banno
@@ -51,7 +51,7 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - "^docs:"
-    - "^test:"
+      - "^docs:"
+      - "^test:"
 env_files:
   github_token: .github_token
