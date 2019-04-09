@@ -1,19 +1,47 @@
-## 0.3.0 (2019-02-19)
+<a name="unreleased"></a>
+## [Unreleased]
 
-- Switch to go.mod plus dependency upgrades
 
-## 0.2.2 (2018-10-17)
+<a name="0.5.0"></a>
+## [0.5.0] - 2019-04-09
+### Feat
+- **build:** Further automate the build
 
-- Improve display on mobile browsers
 
-## 0.2.1 (2018-05-09)
+<a name="0.4.0"></a>
+## [0.4.0] - 2019-02-25
 
-- Add `-force-tls=true` flag to rewrite http urls as https
+<a name="0.3.0"></a>
+## [0.3.0] - 2019-02-19
 
-## 0.2.0 (2018-04-09)
+<a name="0.2.2"></a>
+## [0.2.2] - 2018-10-17
+### Build
+- fix version extraction
 
-- `index.ingress.banno.com/ignore` annotation to ignore `Ingress` objects ([#1](https://github.com/Banno/kube-ingress-index/issues/1)).
+### Docs
+- add example image
 
-## 0.1.0 (2018-04-09)
 
-- Initial release
+<a name="0.2.1"></a>
+## [0.2.1] - 2018-05-09
+
+<a name="0.2.0"></a>
+## [0.2.0] - 2018-04-09
+### Doc
+- quick release steps
+
+
+<a name="0.1.0"></a>
+## 0.1.0 - 2018-04-09
+### Reverts
+- update deps, dep init
+
+
+[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/Banno/kube-ingress-index/compare/0.4.0...0.5.0
+[0.4.0]: https://github.com/Banno/kube-ingress-index/compare/0.3.0...0.4.0
+[0.3.0]: https://github.com/Banno/kube-ingress-index/compare/0.2.2...0.3.0
+[0.2.2]: https://github.com/Banno/kube-ingress-index/compare/0.2.1...0.2.2
+[0.2.1]: https://github.com/Banno/kube-ingress-index/compare/0.2.0...0.2.1
+[0.2.0]: https://github.com/Banno/kube-ingress-index/compare/0.1.0...0.2.0
