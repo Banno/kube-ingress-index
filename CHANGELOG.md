@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="0.5.1"></a>
+## [0.5.1] - 2019-04-09
+### Fix
+- **build:** Release notes
+
+
 <a name="0.5.0"></a>
 ## [0.5.0] - 2019-04-09
 ### Feat
@@ -38,7 +44,8 @@
 - update deps, dep init
 
 
-[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.5.1...HEAD
+[0.5.1]: https://github.com/Banno/kube-ingress-index/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/Banno/kube-ingress-index/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/Banno/kube-ingress-index/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/Banno/kube-ingress-index/compare/0.2.2...0.3.0
