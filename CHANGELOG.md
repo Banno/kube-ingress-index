@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="0.6.2"></a>
+## [0.6.2] - 2019-08-29
+### Fix
+- **api:** Use the correct module
+
+
 <a name="0.6.1"></a>
 ## [0.6.1] - 2019-08-29
 ### Fix
@@ -54,7 +60,8 @@
 - update deps, dep init
 
 
-[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.6.1...HEAD
+[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.6.2...HEAD
+[0.6.2]: https://github.com/Banno/kube-ingress-index/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/Banno/kube-ingress-index/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/Banno/kube-ingress-index/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/Banno/kube-ingress-index/compare/0.4.0...0.5.1
