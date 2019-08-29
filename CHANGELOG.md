@@ -7,6 +7,8 @@
 ### Fix
 - **build:** Release notes
 - **format:** Consistent indentation
+### Feat
+- **api:** Upgrade APIs to Kubernetes v1.14+
 
 
 <a name="0.5.1"></a>

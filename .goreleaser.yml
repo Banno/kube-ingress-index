@@ -34,15 +34,6 @@ builds:
     ldflags:
       - -s
       - -w
-archive:
-  wrap_in_directory: true
-  format_overrides:
-    - goos: windows
-      format: zip
-  files:
-    - LICENSE
-    - README.md
-    - CHANGELOG.md
 checksum:
   name_template: checksums.txt
 snapshot:
