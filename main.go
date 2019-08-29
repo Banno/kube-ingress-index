@@ -38,7 +38,7 @@ import (
 	"syscall"
 	"time"
 
-	k8sExtensions "k8s.io/api/extensions/v1beta1"
+	k8sNetworking "k8s.io/api/networking/v1beta1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -205,7 +205,7 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 }
 
 // TODO(adam): return multiple FQDN's
-func buildFQDN(ing k8sExtensions.IngressSpec) string {
+func buildFQDN(ing k8sNetworking.IngressSpec) string {
 	tlsHosts := make(map[string]bool)
 	for i := range ing.TLS {
 		for j := range ing.TLS[i].Hosts {
@@ -233,7 +233,7 @@ func buildFQDN(ing k8sExtensions.IngressSpec) string {
 	return ""
 }
 
-func buildIngress(ing *k8sExtensions.Ingress) (*ingress, error) {
+func buildIngress(ing *k8sNetworking.Ingress) (*ingress, error) {
 	if _, exists := ing.Annotations[annotationIgnore]; exists {
 		return nil, fmt.Errorf("ignoring %s due to annotation", ing.Name)
 	}
@@ -313,7 +313,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 
 	ingEventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			addIng, ok := obj.(*k8sExtensions.Ingress)
+			addIng, ok := obj.(*k8sNetworking.Ingress)
 			if ok {
 				ing, err := buildIngress(addIng)
 				if err == nil {
@@ -324,7 +324,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			delIng, ok := obj.(*k8sExtensions.Ingress)
+			delIng, ok := obj.(*k8sNetworking.Ingress)
 			if ok {
 				ing, err := buildIngress(delIng)
 				if err == nil {
@@ -335,7 +335,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 			}
 		},
 		UpdateFunc: func(_, cur interface{}) {
-			upIng, ok := cur.(*k8sExtensions.Ingress)
+			upIng, ok := cur.(*k8sNetworking.Ingress)
 			if ok {
 				ing, err := buildIngress(upIng)
 				if err == nil {
@@ -352,7 +352,7 @@ func watchIngresses(kubeClient *kubernetes.Clientset, namespaces []string, respC
 			ListFunc:  ingressListFunc(kubeClient, namespaces[i]),
 			WatchFunc: ingressWatchFunc(kubeClient, namespaces[i]),
 		}
-		_, controller := cache.NewInformer(watch, &k8sExtensions.Ingress{}, resyncInterval, ingEventHandler)
+		_, controller := cache.NewInformer(watch, &k8sNetworking.Ingress{}, resyncInterval, ingEventHandler)
 		go controller.Run(nil) // TODO(adam): pass doneChan through to here
 	}
 }
