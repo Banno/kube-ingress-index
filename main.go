@@ -35,6 +35,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	k8sExtensions "k8s.io/api/extensions/v1beta1"
@@ -73,8 +74,7 @@ func main() {
 	flag.Parse()
 
 	// validation
-	var watchableNamespaces []string
-	watchableNamespaces = strings.Split(*flagWatchableNamespaces, ",")
+	var watchableNamespaces = strings.Split(*flagWatchableNamespaces, ",")
 	if *flagWatchableNamespaces == "" {
 		ns := os.Getenv("NAMESPACES")
 		flagWatchableNamespaces = &ns
@@ -109,10 +109,10 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	doneChan := make(chan error, 1)
 	go handleSignals(signalChan, doneChan)
-	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
 	// setup http page
-	listenHttp(*flagAddress, respChan, doneChan)
+	listenHTTP(*flagAddress, respChan, doneChan)
 }
 
 func homeDir() string {
@@ -123,12 +123,9 @@ func homeDir() string {
 }
 
 func handleSignals(signalChan chan os.Signal, doneChan chan error) {
-	for {
-		select {
-		case s := <-signalChan:
-			doneChan <- fmt.Errorf("shutdown initiated, signal=%v", s)
-			return
-		}
+	for s := range signalChan {
+		doneChan <- fmt.Errorf("shutdown initiated, signal=%v", s)
+		return
 	}
 }
 
@@ -150,7 +147,7 @@ var pageContent = `<!doctype html>
   </body>
 </html>`
 
-func listenHttp(address string, respChan chan []ingress, doneChan chan error) {
+func listenHTTP(address string, respChan chan []ingress, doneChan chan error) {
 	var curIngresses []ingress
 
 	srv := &http.Server{
@@ -197,19 +194,19 @@ func sortIngresses(ing []ingress) {
 
 func ingressListFunc(c *kubernetes.Clientset, ns string) func(k8sMeta.ListOptions) (runtime.Object, error) {
 	return func(opts k8sMeta.ListOptions) (runtime.Object, error) {
-		return c.Extensions().Ingresses(ns).List(opts)
+		return c.NetworkingV1beta1().Ingresses(ns).List(opts)
 	}
 }
 
 func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.ListOptions) (watch.Interface, error) {
 	return func(options k8sMeta.ListOptions) (watch.Interface, error) {
-		return c.Extensions().Ingresses(ns).Watch(options)
+		return c.NetworkingV1beta1().Ingresses(ns).Watch(options)
 	}
 }
 
 // TODO(adam): return multiple FQDN's
 func buildFQDN(ing k8sExtensions.IngressSpec) string {
-	tlsHosts := make(map[string]bool, 0)
+	tlsHosts := make(map[string]bool)
 	for i := range ing.TLS {
 		for j := range ing.TLS[i].Hosts {
 			tlsHosts[ing.TLS[i].Hosts[j]] = true
@@ -290,6 +287,7 @@ func (i *ingresses) upsert(ing ingress) []ingress {
 	copy(out, i.active)
 	return out
 }
+
 func (i *ingresses) delete(ing ingress) []ingress {
 	i.mu.Lock()
 	defer i.mu.Unlock()
