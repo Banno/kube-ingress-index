@@ -22,3 +22,5 @@ require (
 	k8s.io/utils v0.0.0-20190829053155-3a4a5477acf8 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
+
+go 1.13

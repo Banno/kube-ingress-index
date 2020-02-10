@@ -51,7 +51,7 @@ You can pull the docker image from Docker Hub: [`banno/kube-ingress-index`](http
 
 ### Annotations
 
-- `index.ingress.banno.com/ignore`: Set this to have kube-ingress-index not list the Ingress
+- `index.ingress.banno.com/path`: Required annotation specifying the path to build the link with, otherwise, the `Ingress` is ignored
 
 ## Release Steps
 
