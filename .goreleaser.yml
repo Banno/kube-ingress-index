@@ -6,10 +6,10 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - "registry.banno-internal.com/{{.ProjectName}}:{{.Tag}}"
-      - "registry.banno-internal.com/{{.ProjectName}}:{{.Major}}"
-      - "registry.banno-internal.com/{{.ProjectName}}:{{.Major}}.{{.Minor}}"
-      - "registry.banno-internal.com/{{.ProjectName}}:latest"
+      - "docker.artifactory.banno-tools.com/{{.ProjectName}}:{{.Tag}}"
+      - "docker.artifactory.banno-tools.com/{{.ProjectName}}:{{.Major}}"
+      - "docker.artifactory.banno-tools.com/{{.ProjectName}}:{{.Major}}.{{.Minor}}"
+      - "docker.artifactory.banno-tools.com/{{.ProjectName}}:latest"
     build_flag_templates:
       - "--label=org.label-schema.schema-version=1.0"
       - "--label=org.label-schema.vendor=Jack Henry & Associates"

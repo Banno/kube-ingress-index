@@ -53,7 +53,7 @@ import (
 
 var (
 	// annotations
-	annotationIgnore = "index.ingress.banno.com/ignore"
+	pathAnnotation = "index.ingress.banno.com/path"
 
 	// flags
 	flagAddress             = flag.String("address", "0.0.0.0:8080", "Address to listen on")
@@ -205,18 +205,19 @@ func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.L
 }
 
 // TODO(adam): return multiple FQDN's
-func buildFQDN(ing k8sNetworking.IngressSpec) string {
+func buildFQDN(ing *k8sNetworking.Ingress) string {
 	tlsHosts := make(map[string]bool)
-	for i := range ing.TLS {
-		for j := range ing.TLS[i].Hosts {
-			tlsHosts[ing.TLS[i].Hosts[j]] = true
+	if path, ok := ing.Annotations[pathAnnotation]; ok {
+		spec := ing.Spec
+		for i := range spec.TLS {
+			for j := range spec.TLS[i].Hosts {
+				tlsHosts[spec.TLS[i].Hosts[j]] = true
+			}
 		}
-	}
 
-	for i := range ing.Rules {
-		host := ing.Rules[i].Host
-		paths := ing.Rules[i].IngressRuleValue.HTTP.Paths
-		for i := range paths {
+		for i := range spec.Rules {
+			host := spec.Rules[i].Host
+
 			var u *url.URL
 			if *flagForceTLS || tlsHosts[host] {
 				u, _ = url.Parse(fmt.Sprintf("https://%s", host))
@@ -226,7 +227,8 @@ func buildFQDN(ing k8sNetworking.IngressSpec) string {
 			if u == nil || u.Host == "" || strings.HasPrefix(u.Host, "localhost:") { // ignore invalid rules/hosts
 				continue
 			}
-			u.Path = paths[i].Path
+
+			u.Path = path
 			return u.String()
 		}
 	}
@@ -234,11 +236,7 @@ func buildFQDN(ing k8sNetworking.IngressSpec) string {
 }
 
 func buildIngress(ing *k8sNetworking.Ingress) (*ingress, error) {
-	if _, exists := ing.Annotations[annotationIgnore]; exists {
-		return nil, fmt.Errorf("ignoring %s due to annotation", ing.Name)
-	}
-
-	fqdn := buildFQDN(ing.Spec)
+	fqdn := buildFQDN(ing)
 	if fqdn == "" {
 		return nil, errors.New("empty FQDN")
 	}
@@ -273,7 +271,7 @@ func (i *ingresses) upsert(ing ingress) []ingress {
 
 	found := false
 	for k := range i.active {
-		if i.active[k].FQDN == ing.FQDN {
+		if i.active[k].Name == ing.Name {
 			found = true
 			break // we've already added this ingress
 		}
@@ -294,7 +292,7 @@ func (i *ingresses) delete(ing ingress) []ingress {
 
 	var next []ingress
 	for k := range i.active {
-		if i.active[k].FQDN == ing.FQDN {
+		if i.active[k].Name == ing.Name {
 			continue
 		}
 		next = append(next, i.active[k])
