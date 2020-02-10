@@ -2,17 +2,23 @@
 ## [Unreleased]
 
 
-<a name="0.6.2"></a>
-## [0.6.2] - 2019-08-29
+<a name="0.7.0"></a>
+## [0.7.0] - 2020-02-10
+### Feat
+- Update annotation to specify path used in link
+
 ### Fix
 - **api:** Use the correct module
 
 
-<a name="0.6.1"></a>
-## [0.6.1] - 2019-08-29
+<a name="0.6.2"></a>
+## [0.6.2] - 2019-08-29
 ### Fix
 - **build:** Fix deprecations and release notes
 
+
+<a name="0.6.1"></a>
+## [0.6.1] - 2019-08-29
 
 <a name="0.6.0"></a>
 ## [0.6.0] - 2019-08-29
@@ -60,7 +66,8 @@
 - update deps, dep init
 
 
-[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.6.2...HEAD
+[Unreleased]: https://github.com/Banno/kube-ingress-index/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/Banno/kube-ingress-index/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/Banno/kube-ingress-index/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/Banno/kube-ingress-index/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/Banno/kube-ingress-index/compare/0.5.1...0.6.0
