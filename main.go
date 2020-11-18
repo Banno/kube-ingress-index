@@ -65,7 +65,7 @@ var (
 	// default settings
 	resyncInterval = 60 * time.Second
 
-	ctx context.Context
+	ctx context.Context = context.Background()
 )
 
 func main() {
