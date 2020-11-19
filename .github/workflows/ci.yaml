@@ -1,4 +1,4 @@
-name: Run Tests and Vet
+name: CI
 
 on:
   push:
@@ -17,3 +17,9 @@ jobs:
           go-version: 1.15
       - run: go test ./...
       - run: go vet ./...
+  build-docker-image:
+    name: Build docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build .
