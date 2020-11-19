@@ -37,8 +37,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"context"
 
-	k8sNetworking "k8s.io/api/networking/v1beta1"
+	k8sNetworking "k8s.io/api/networking/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -63,6 +64,8 @@ var (
 
 	// default settings
 	resyncInterval = 60 * time.Second
+
+	ctx context.Context = context.Background()
 )
 
 func main() {
@@ -194,13 +197,13 @@ func sortIngresses(ing []ingress) {
 
 func ingressListFunc(c *kubernetes.Clientset, ns string) func(k8sMeta.ListOptions) (runtime.Object, error) {
 	return func(opts k8sMeta.ListOptions) (runtime.Object, error) {
-		return c.NetworkingV1beta1().Ingresses(ns).List(opts)
+		return c.NetworkingV1().Ingresses(ns).List(ctx, opts)
 	}
 }
 
 func ingressWatchFunc(c *kubernetes.Clientset, ns string) func(options k8sMeta.ListOptions) (watch.Interface, error) {
 	return func(options k8sMeta.ListOptions) (watch.Interface, error) {
-		return c.NetworkingV1beta1().Ingresses(ns).Watch(options)
+		return c.NetworkingV1().Ingresses(ns).Watch(ctx, options)
 	}
 }
 

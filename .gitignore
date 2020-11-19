@@ -1,3 +1,4 @@
 .github_token
 bin/
 dist/
+kube-ingress-index
