@@ -1,6 +1,10 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+<a name="1.0.0"></a>
+## [1.0.0] - 2022-06-14
+### Feat
+- Update to golang 1.18 and k8s api 0.24.1
 
 <a name="0.7.0"></a>
 ## [0.7.0] - 2020-02-10
