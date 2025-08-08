@@ -1,4 +1,4 @@
-FROM golang:1.18 as build-space
+FROM golang:1.23 as build-space
 
 COPY . /root/
 WORKDIR /root/
