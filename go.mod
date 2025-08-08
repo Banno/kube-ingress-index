@@ -1,4 +1,4 @@
-module github.com/banno/kube-ingress-index
+module github.com/Banno/kube-ingress-index
 
 require (
 	k8s.io/api v0.24.1
@@ -44,4 +44,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.2
